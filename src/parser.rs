@@ -1,13 +1,10 @@
+use crate::reqest::ReqestOptions;
 use anyhow::anyhow;
 use regex::Regex;
-struct ReqestOptions<'a> {
-    live_id: &'a str,
-    api_key: &'a str,
-    client_version: &'a str,
-    continuation: &'a str,
-}
 
-async fn get_options_from_live_page<'a>(data: &'a str) -> Result<ReqestOptions<'a>, anyhow::Error> {
+fn get_options_from_live_page<'a>(
+    data: &'a str,
+) -> Result<(ReqestOptions<'a>, &'a str), anyhow::Error> {
     let live_id_regex =
         Regex::new(r#"<link rel="canonical" href="https:\/\/www.youtube.com\/watch\?v=(.+?)">"#)
             .unwrap();
@@ -40,10 +37,16 @@ async fn get_options_from_live_page<'a>(data: &'a str) -> Result<ReqestOptions<'
         None => return Err(anyhow!("Client Version was not found.")),
     };
 
-    Ok(ReqestOptions {
+    Ok((
+        ReqestOptions {
+            api_key,
+            client_version,
+            continuation,
+        },
         live_id,
-        api_key,
-        client_version,
-        continuation,
-    })
+    ))
+}
+
+fn parseChatData() {
+    unimplemented!()
 }
