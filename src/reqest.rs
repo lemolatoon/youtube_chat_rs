@@ -1,4 +1,8 @@
-use crate::youtube_types::GetLiveChatBody;
+use crate::{
+    item::ChatItem,
+    parser::parse_chat_data,
+    youtube_types::{GetLiveChatBody, GetLiveChatResponse},
+};
 
 pub struct ReqestOptions<'a> {
     pub api_key: &'a str,
@@ -6,7 +10,9 @@ pub struct ReqestOptions<'a> {
     pub continuation: &'a str,
 }
 
-pub async fn fetch_chat<'a>(options: ReqestOptions<'a>) -> Result<(), anyhow::Error> {
+pub async fn fetch_chat<'a>(
+    options: ReqestOptions<'a>,
+) -> Result<(Vec<ChatItem>, String), anyhow::Error> {
     let url = format!(
         "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat?key={}",
         options.api_key
@@ -18,5 +24,6 @@ pub async fn fetch_chat<'a>(options: ReqestOptions<'a>) -> Result<(), anyhow::Er
     );
     let client = reqwest::Client::new();
     let response = client.post(url).json(&body).send().await?;
-    todo!()
+    let json: GetLiveChatResponse = response.json().await?;
+    Ok(parse_chat_data(json))
 }

@@ -21,12 +21,12 @@ impl GetLiveChatBody {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct GetLiveChatBodyContext {
+pub struct GetLiveChatBodyContext {
     client: GetLiveChatBodyContextClient,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct GetLiveChatBodyContextClient {
+pub struct GetLiveChatBodyContextClient {
     #[serde(rename = "clientVersion")]
     client_version: String,
     #[serde(rename = "clientName")]
@@ -34,70 +34,75 @@ struct GetLiveChatBodyContextClient {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct GetLiveChatResponse {
+pub struct GetLiveChatResponse {
     #[serde(rename = "responseContext")]
-    response_context: serde_json::Value,
+    pub response_context: serde_json::Value,
     #[serde(rename = "trackingParams")]
-    tracking_params: Option<String>,
+    pub tracking_params: Option<String>,
     #[serde(rename = "continuationContents")]
-    continuation_contents: GetLiveChatResponseContinuationContents,
+    pub continuation_contents: GetLiveChatResponseContinuationContents,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct GetLiveChatResponseContinuationContents {
-    continuations: Vec<Continuation>,
-    actions: Vec<Action>,
+pub struct GetLiveChatResponseContinuationContents {
+    #[serde(rename = "liveChatContinuaton")]
+    pub live_chat_continuaton: LiveChatContinuation,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LiveChatContinuation {
+    pub continuations: Vec<Continuation>,
+    pub actions: Vec<Action>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Continuation {
+pub struct Continuation {
     #[serde(rename = "invalidationContinuationData")]
-    invalidation_continuation_data: Option<InvalidationContinuationData>,
+    pub invalidation_continuation_data: Option<InvalidationContinuationData>,
     #[serde(rename = "timedContinuationData")]
-    timed_continuation_data: Option<TimedContinuationData>,
+    pub timed_continuation_data: Option<TimedContinuationData>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct InvalidationContinuationData {
+pub struct InvalidationContinuationData {
     #[serde(rename = "invalidationId")]
-    invalidation_id: InvalidationId,
+    pub invalidation_id: InvalidationId,
     #[serde(rename = "timeoutMs")]
-    timeout_ms: usize,
-    continuation: String,
+    pub timeout_ms: usize,
+    pub continuation: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct InvalidationId {
+pub struct InvalidationId {
     #[serde(rename = "objectSource")]
-    object_source: usize,
+    pub object_source: usize,
     #[serde(rename = "objectId")]
-    object_id: String,
-    topic: String,
+    pub object_id: String,
+    pub topic: String,
     #[serde(rename = "subscribeToGcmTopics")]
-    subscribe_to_gcm_topics: bool,
+    pub subscribe_to_gcm_topics: bool,
     #[serde(rename = "protoCreationTimestampMs")]
-    proto_creation_timestamp_ms: String,
+    pub proto_creation_timestamp_ms: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct TimedContinuationData {
+pub struct TimedContinuationData {
     #[serde(rename = "timeoutMs")]
-    timeout_ms: usize,
-    continuation: String,
+    pub timeout_ms: usize,
+    pub continuation: String,
     #[serde(rename = "clickTrackingParams")]
-    click_tracking_params: String,
+    pub click_tracking_params: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Action {
+pub struct Action {
     #[serde(rename = "addChatItemAction")]
-    add_chat_item_action: Option<AddChatItemAction>,
+    pub add_chat_item_action: Option<AddChatItemAction>,
     #[serde(rename = "addLiveChatTickerItemAction")]
-    add_live_chat_ticker_item_action: Option<serde_json::Value>,
+    pub add_live_chat_ticker_item_action: Option<serde_json::Value>,
 }
 
 /* MessageRun */
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
-enum MessageRun {
+pub enum MessageRun {
     MessageText {
         text: String,
     },
@@ -110,203 +115,205 @@ enum MessageRun {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Emoji {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Emoji {
     #[serde(rename = "emojiId")]
-    emoji_id: String,
-    shortcuts: Vec<String>,
+    pub emoji_id: String,
+    pub shortcuts: Vec<String>,
     #[serde(rename = "searchTerms")]
-    search_terms: Vec<String>,
+    pub search_terms: Vec<String>,
     #[serde(rename = "supportsSkinTone")]
-    supports_skin_tone: bool,
-    image: Image,
+    pub supports_skin_tone: bool,
+    pub image: Image,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct Image {
-    thumbnails: Vec<Thumbnail>,
-    accessibility: Accessibility,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Image {
+    pub thumbnails: Vec<Thumbnail>,
+    pub accessibility: Accessibility,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct Accessibility {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Accessibility {
     #[serde(rename = "accessibilityData")]
-    accessibility_data: AccessibilityData,
+    pub accessibility_data: AccessibilityData,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct AccessibilityData {
-    label: String,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AccessibilityData {
+    pub label: String,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct Thumbnail {
-    url: String,
-    width: Option<usize>,
-    height: Option<usize>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Thumbnail {
+    pub url: String,
+    pub width: Option<usize>,
+    pub height: Option<usize>,
 }
 /* MessageRun End */
 
 /* MessageRenderers */
 /* MessageRenderersBase */
 /* AuthorBadge */
-#[derive(Serialize, Deserialize, Debug)]
-struct AuthorBadge {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AuthorBadge {
     #[serde(rename = "liveChatAuthorBadgeRenderer")]
-    live_chat_author_badge_renderer: LiveChatAuthorBadgeRenderer,
+    pub live_chat_author_badge_renderer: LiveChatAuthorBadgeRenderer,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct LiveChatAuthorBadgeRenderer {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LiveChatAuthorBadgeRenderer {
     #[serde(rename = "customThumbnail")]
-    custom_thumbnail: Option<CustomThumbnail>,
-    icon: Option<Icon>,
-    tooltip: String,
-    accessibility: Accessibility,
+    pub custom_thumbnail: Option<CustomThumbnail>,
+    pub icon: Option<Icon>,
+    pub tooltip: String,
+    pub accessibility: Accessibility,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct CustomThumbnail {
-    thumbnails: Vec<Thumbnail>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CustomThumbnail {
+    pub thumbnails: Vec<Thumbnail>,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct Icon {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Icon {
     #[serde(rename = "iconType")]
-    icon_type: String,
+    pub icon_type: String,
 }
 /* AuthorBadge End */
 
-#[derive(Serialize, Deserialize, Debug)]
-struct MessageRendererBase {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct MessageRendererBase {
     #[serde(rename = "authorName")]
-    author_name: Option<AuthorName>,
+    pub author_name: Option<AuthorName>,
     #[serde(rename = "authorPhoto")]
-    author_photo: AuthorPhoto,
+    pub author_photo: AuthorPhoto,
     #[serde(rename = "authorBadges")]
-    author_badges: Option<Vec<AuthorBadge>>,
+    pub author_badges: Option<Vec<AuthorBadge>>,
     #[serde(rename = "contextMenuEndpoint")]
-    context_menu_endpoint: ContextMenuEndpoint,
-    id: String,
+    pub context_menu_endpoint: ContextMenuEndpoint,
+    pub id: String,
     #[serde(rename = "timestampUsec")]
-    timestamp_usec: String,
+    pub timestamp_usec: String,
     #[serde(rename = "authorExternalChannelId")]
-    author_external_channel_id: String,
+    pub author_external_channel_id: String,
     #[serde(rename = "contextMenuAccessibility")]
-    context_menu_accessibility: Accessibility,
+    pub context_menu_accessibility: Accessibility,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct ContextMenuEndpoint {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ContextMenuEndpoint {
     #[serde(rename = "clickTrackingParams")]
-    click_tracking_params: String,
+    pub click_tracking_params: String,
     #[serde(rename = "commandMetadata")]
-    command_metadata: CommandMetadata,
+    pub command_metadata: CommandMetadata,
     #[serde(rename = "liveChatItemContextMenuEndpoint")]
-    live_chat_item_context_menu_endpoint: LiveChatItemContextMenuEndpoint,
+    pub live_chat_item_context_menu_endpoint: LiveChatItemContextMenuEndpoint,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct LiveChatItemContextMenuEndpoint {
-    params: String,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LiveChatItemContextMenuEndpoint {
+    pub params: String,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct CommandMetadata {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CommandMetadata {
     #[serde(rename = "webCommandMetadata")]
-    web_command_metadata: WebCommandMetadata,
+    pub web_command_metadata: WebCommandMetadata,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct WebCommandMetadata {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct WebCommandMetadata {
     #[serde(rename = "ignoreNavigation")]
-    ignore_navigation: bool,
+    pub ignore_navigation: bool,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct AuthorPhoto {
-    thumbnails: Vec<Thumbnail>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AuthorPhoto {
+    pub thumbnails: Vec<Thumbnail>,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct AuthorName {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AuthorName {
     #[serde(rename = "simpleText")]
-    simple_text: String,
+    pub simple_text: String,
 }
 /* MessageRenderersBase End */
 #[derive(Serialize, Deserialize, Debug)]
-struct LiveChatTextMessageRenderer {
+pub struct LiveChatTextMessageRenderer {
     #[serde(flatten)]
-    message_renderer_base: MessageRendererBase,
-    message: Message,
+    pub message_renderer_base: MessageRendererBase,
+    pub message: Message,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Message {
-    runs: Vec<MessageRun>,
+pub struct Message {
+    pub runs: Vec<MessageRun>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct LiveChatPaidMessageRenderer {
+pub struct LiveChatPaidMessageRenderer {
     #[serde(flatten)]
-    live_chat_text_message_renderer: LiveChatTextMessageRenderer,
+    pub live_chat_text_message_renderer: LiveChatTextMessageRenderer,
     #[serde(rename = "purchaseAmountText")]
-    purchase_amount_text: PurchaseAmountText,
+    pub purchase_amount_text: PurchaseAmountText,
     #[serde(rename = "headerBackgroundColor")]
-    header_background_color: isize,
+    pub header_background_color: isize,
     #[serde(rename = "headerTextColor")]
-    header_text_color: isize,
+    pub header_text_color: isize,
     #[serde(rename = "bodyBackgroundColor")]
-    body_background_color: isize,
+    pub body_background_color: isize,
     #[serde(rename = "bodyTextColor")]
-    body_text_color: isize,
+    pub body_text_color: isize,
     #[serde(rename = "authorNameTextColor")]
-    author_name_text_color: isize,
+    pub author_name_text_color: isize,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct LiveChatPaidStickerRenderer {
+pub struct LiveChatPaidStickerRenderer {
     #[serde(flatten)]
-    message_renderer_base: MessageRendererBase,
+    pub message_renderer_base: MessageRendererBase,
     #[serde(rename = "purchaseAmountText")]
-    purchase_amount_text: PurchaseAmountText,
-    sticker: Sticker,
+    pub purchase_amount_text: PurchaseAmountText,
+    pub sticker: Sticker,
     #[serde(rename = "moneyChipBackgroundColor")]
-    money_chip_background_color: isize,
+    pub money_chip_background_color: isize,
     #[serde(rename = "moneyChipTextColor")]
-    money_chip_text_color: isize,
+    pub money_chip_text_color: isize,
     #[serde(rename = "stickerDisplayWidth")]
-    sticker_display_width: isize,
+    pub sticker_display_width: isize,
     #[serde(rename = "stickerDisplayHeight")]
-    sticker_display_height: isize,
+    pub sticker_display_height: isize,
     #[serde(rename = "BackgroundColor")]
-    background_color: isize,
+    pub background_color: isize,
     #[serde(rename = "authorNameTextColor")]
-    author_name_text_color: isize,
+    pub author_name_text_color: isize,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Sticker {
-    thumbnails: Vec<Thumbnail>,
-    accessibility: Accessibility,
+pub struct Sticker {
+    pub thumbnails: Vec<Thumbnail>,
+    pub accessibility: Accessibility,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct PurchaseAmountText {
+pub struct PurchaseAmountText {
     #[serde(rename = "simpleText")]
-    simple_text: String,
+    pub simple_text: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct LiveChatMembershipItemRenderer {
+pub struct LiveChatMembershipItemRenderer {
+    #[serde(flatten)]
+    pub message_renderer_base: MessageRendererBase,
     #[serde(rename = "headerSubText")]
-    header_sub_text: HeaderSubText,
+    pub header_sub_text: HeaderSubText,
     #[serde(rename = "authorBadges")]
-    author_badges: Vec<AuthorBadge>,
+    pub author_badges: Vec<AuthorBadge>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct HeaderSubText {
-    runs: Vec<MessageRun>,
+pub struct HeaderSubText {
+    pub runs: Vec<MessageRun>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct AddChatItemAction {
-    item: ActionItem,
+pub struct AddChatItemAction {
+    pub item: ActionItem,
     #[serde(rename = "clientId")]
-    client_id: String,
+    pub client_id: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct ActionItem {
+pub struct ActionItem {
     #[serde(rename = "liveChatTextMessageRenderer")]
-    live_chat_text_message_renderer: Option<LiveChatTextMessageRenderer>,
+    pub live_chat_text_message_renderer: Option<LiveChatTextMessageRenderer>,
     #[serde(rename = "liveChatPaidMessageRenderer")]
-    live_chat_paid_message_renderer: Option<LiveChatPaidMessageRenderer>,
+    pub live_chat_paid_message_renderer: Option<LiveChatPaidMessageRenderer>,
     #[serde(rename = "liveChatMembershipItemRenderer")]
-    live_chat_membership_item_renderer: Option<LiveChatMembershipItemRenderer>,
+    pub live_chat_membership_item_renderer: Option<LiveChatMembershipItemRenderer>,
     #[serde(rename = "liveChatPaidStickerRenderer")]
-    live_chat_paid_sticker_renderer: Option<LiveChatPaidStickerRenderer>,
+    pub live_chat_paid_sticker_renderer: Option<LiveChatPaidStickerRenderer>,
     #[serde(rename = "liveChatViewerEngagementMessageRenderer")]
-    live_chat_viewer_engagement_message_renderer: serde_json::Value,
+    pub live_chat_viewer_engagement_message_renderer: serde_json::Value,
 }

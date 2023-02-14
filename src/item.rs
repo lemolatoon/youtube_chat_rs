@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Utc};
 use serde::{self, Deserialize, Serialize};
 
 #[derive(Debug)]
@@ -11,12 +11,12 @@ pub struct ChatItem {
     pub is_verified: bool,
     pub is_owner: bool,
     pub is_moderator: bool,
-    pub timestamp: DateTime<Local>,
+    pub timestamp: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug)]
 pub struct Author {
-    pub name: String,
+    pub name: Option<String>,
     pub thumbnail: Option<ImageItem>,
     pub channel_id: String,
     pub badge: Option<Badge>,
@@ -36,9 +36,9 @@ pub struct ImageItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EmojiItem {
     #[serde(flatten)]
-    pub image_item: ImageItem,
-    pub emoji_text: String,
-    pub is_custom_emoji: bool,
+    pub image_item: Option<ImageItem>,
+    pub emoji_text: Option<String>,
+    pub is_custome_emoji: Option<bool>,
 }
 #[derive(Debug)]
 pub struct Badge {
