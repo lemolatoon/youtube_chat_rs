@@ -1,6 +1,6 @@
 use crate::{
     item::{Author, Badge, ChatItem, EmojiItem, ImageItem, MessageItem, SuperChat},
-    reqest::ReqestOptions,
+    request::RequestOptions,
     youtube_types::{
         Action, AuthorBadge, GetLiveChatResponse, LiveChatMembershipItemRenderer,
         LiveChatPaidMessageRenderer, LiveChatPaidStickerRenderer, LiveChatTextMessageRenderer,
@@ -13,7 +13,7 @@ use regex::Regex;
 
 fn get_options_from_live_page<'a>(
     data: &'a str,
-) -> Result<(ReqestOptions<'a>, &'a str), anyhow::Error> {
+) -> Result<(RequestOptions<'a>, &'a str), anyhow::Error> {
     let live_id_regex =
         Regex::new(r#"<link rel="canonical" href="https:\/\/www.youtube.com\/watch\?v=(.+?)">"#)
             .unwrap();
@@ -47,7 +47,7 @@ fn get_options_from_live_page<'a>(
     };
 
     Ok((
-        ReqestOptions {
+        RequestOptions {
             api_key,
             client_version,
             continuation,

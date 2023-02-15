@@ -4,14 +4,14 @@ use crate::{
     youtube_types::{GetLiveChatBody, GetLiveChatResponse},
 };
 
-pub struct ReqestOptions<'a> {
+pub struct RequestOptions<'a> {
     pub api_key: &'a str,
     pub client_version: &'a str,
     pub continuation: &'a str,
 }
 
 pub async fn fetch_chat<'a>(
-    options: ReqestOptions<'a>,
+    options: RequestOptions<'a>,
 ) -> Result<(Vec<ChatItem>, String), anyhow::Error> {
     let url = format!(
         "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat?key={}",
