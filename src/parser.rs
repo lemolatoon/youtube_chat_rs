@@ -11,14 +11,12 @@ use anyhow::anyhow;
 use chrono::{DateTime, TimeZone, Utc};
 use regex::Regex;
 
-fn get_options_from_live_page<'a>(
-    data: &'a str,
-) -> Result<(RequestOptions<'a>, &'a str), anyhow::Error> {
+pub fn get_options_from_live_page(data: String) -> Result<(RequestOptions, String), anyhow::Error> {
     let live_id_regex =
         Regex::new(r#"<link rel="canonical" href="https:\/\/www.youtube.com\/watch\?v=(.+?)">"#)
             .unwrap();
     let live_id = match live_id_regex.find(&data) {
-        Some(matched) => matched.as_str(),
+        Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("Live Stream was not found.")),
     };
 
@@ -30,19 +28,19 @@ fn get_options_from_live_page<'a>(
 
     let api_key_regex = Regex::new(r#"['"]INNERTUBE_API_KEY['"]:\s*['"](.+?)['"]"#).unwrap();
     let api_key = match api_key_regex.find(&data) {
-        Some(matched) => matched.as_str(),
+        Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("{live_id} is finished live.")),
     };
 
     let client_version_regex = Regex::new(r#"['"]clientVersion['"]:\s*['"]([\d.]+?)['"]"#).unwrap();
     let client_version = match client_version_regex.find(&data) {
-        Some(matched) => matched.as_str(),
+        Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("Client Version was not found.")),
     };
 
     let continuation_regex = Regex::new(r#"['"]continuation['"]:\s*['"](.+?)['"]"#).unwrap();
     let continuation = match continuation_regex.find(&data) {
-        Some(matched) => matched.as_str(),
+        Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("Client Version was not found.")),
     };
 
