@@ -2,64 +2,100 @@ use std::marker::PhantomData;
 
 use url::Url;
 
-struct LiveChatClient {
+pub struct LiveChatClient<SF, ENF, CF, ERF>
+where
+    SF: Fn(),
+    ENF: Fn(),
+    CF: Fn(),
+    ERF: Fn(),
+{
     live_url: String,
+    on_start: Option<SF>,
+    on_end: Option<ENF>,
+    on_chat: Option<CF>,
+    on_error: Option<ERF>,
 }
 
-impl LiveChatClient {
+impl<SF, ENF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF>
+where
+    SF: Fn(),
+    ENF: Fn(),
+    CF: Fn(),
+    ERF: Fn(),
+{
     pub fn start(&self) {
         unimplemented!()
     }
 }
 
 struct Empty;
-struct FullFilled;
-pub struct LiveChatClientBuilder<T> {
-    live_url: Option<String>,
-    __live_id_state: PhantomData<T>,
+struct Filled<T> {
+    __phantom_data: PhantomData<T>,
+}
+pub struct LiveChatClientBuilder<U, SF, ENF, CF, ERF> {
+    live_url: U,
+    on_start: SF,
+    on_end: ENF,
+    on_chat: CF,
+    on_error: ERF,
 }
 
-impl LiveChatClientBuilder<Empty> {
-    pub fn new() -> LiveChatClientBuilder<Empty> {
+impl LiveChatClientBuilder<(), Empty, Empty, Empty, Empty> {
+    pub fn new() -> Self {
         Self {
-            live_url: None,
-            __live_id_state: PhantomData::<Empty> {},
+            live_url: (),
+            on_start: Empty,
+            on_end: Empty,
+            on_chat: Empty,
+            on_error: Empty,
         }
     }
+}
 
-    pub fn live_id(&self, live_id: String) -> LiveChatClientBuilder<FullFilled> {
+impl<SF, ENF, CF, ERF> LiveChatClientBuilder<(), SF, ENF, CF, ERF> {
+    pub fn live_id(self, live_id: String) -> LiveChatClientBuilder<String, SF, ENF, CF, ERF> {
         LiveChatClientBuilder {
-            live_url: Some(format!("https://www.youtube.com/watch?v={}", live_id)),
-            __live_id_state: PhantomData::<FullFilled> {},
+            live_url: format!("https://www.youtube.com/watch?v={}", live_id),
+            on_start: self.on_start,
+            on_end: self.on_end,
+            on_chat: self.on_chat,
+            on_error: self.on_error,
         }
     }
 
     pub fn url(
-        &self,
+        self,
         raw_url: impl AsRef<str>,
-    ) -> Result<LiveChatClientBuilder<FullFilled>, anyhow::Error> {
+    ) -> Result<LiveChatClientBuilder<String, SF, ENF, CF, ERF>, anyhow::Error> {
         Url::parse(raw_url.as_ref())?;
         Ok(LiveChatClientBuilder {
-            live_url: Some(raw_url.as_ref().to_string()),
-            __live_id_state: PhantomData::<FullFilled> {},
+            live_url: raw_url.as_ref().to_string(),
+            on_start: self.on_start,
+            on_end: self.on_end,
+            on_chat: self.on_chat,
+            on_error: self.on_error,
         })
     }
 
-    pub fn channel_id(&self, channel_id: String) -> LiveChatClientBuilder<FullFilled> {
-        LiveChatClientBuilder::<FullFilled> {
-            live_url: Some(format!(
-                "https://www.youtube.com/channel/{}/live",
-                channel_id
-            )),
-            __live_id_state: PhantomData::<FullFilled> {},
+    pub fn channel_id(self, channel_id: String) -> LiveChatClientBuilder<String, SF, ENF, CF, ERF> {
+        LiveChatClientBuilder {
+            live_url: format!("https://www.youtube.com/channel/{}/live", channel_id),
+            on_start: self.on_start,
+            on_end: self.on_end,
+            on_chat: self.on_chat,
+            on_error: self.on_error,
         }
     }
 }
 
-impl LiveChatClientBuilder<FullFilled> {
-    pub fn build(self) -> LiveChatClient {
+impl<SF, ENF, CF, ERF> LiveChatClientBuilder<String, SF, ENF, CF, ERF> {
+    pub fn build(self) -> LiveChatClient<SF, ENF, CF, ERF> {
         LiveChatClient {
-            live_url: self.live_url.unwrap(), // never fails
+            live_url: self.live_url,
+            on_start: self.on_start,
+            on_end: self.on_end,
+            on_chat: self.on_chat,
+            on_error: self.on_error,
         }
     }
 }
