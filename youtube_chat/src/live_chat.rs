@@ -1,21 +1,23 @@
-use std::marker::PhantomData;
-
 use url::Url;
 
-pub struct LiveChatClient<SF, ENF, CF, ERF>
-where
-    SF: Fn(),
-    ENF: Fn(),
-    CF: Fn(),
-    ERF: Fn(),
-{
+/// SF, ENF, CF, ERF is `()` or `T: Fn()`
+pub struct LiveChatClient<SF, ENF, CF, ERF> {
     live_url: String,
-    on_start: Option<SF>,
-    on_end: Option<ENF>,
-    on_chat: Option<CF>,
-    on_error: Option<ERF>,
+    on_start: SF,
+    on_end: ENF,
+    on_chat: CF,
+    on_error: ERF,
 }
 
+pub struct Func<T: Fn()> {
+    f: T,
+}
+
+impl<T: Fn()> Func<T> {
+    fn new(f: T) -> Self {
+        Self { f }
+    }
+}
 impl<SF, ENF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF>
 where
     SF: Fn(),
@@ -28,10 +30,6 @@ where
     }
 }
 
-struct Empty;
-struct Filled<T> {
-    __phantom_data: PhantomData<T>,
-}
 pub struct LiveChatClientBuilder<U, SF, ENF, CF, ERF> {
     live_url: U,
     on_start: SF,
@@ -40,14 +38,30 @@ pub struct LiveChatClientBuilder<U, SF, ENF, CF, ERF> {
     on_error: ERF,
 }
 
-impl LiveChatClientBuilder<(), Empty, Empty, Empty, Empty> {
+impl LiveChatClientBuilder<(), (), (), (), ()> {
     pub fn new() -> Self {
         Self {
             live_url: (),
-            on_start: Empty,
-            on_end: Empty,
-            on_chat: Empty,
-            on_error: Empty,
+            on_start: (),
+            on_end: (),
+            on_chat: (),
+            on_error: (),
+        }
+    }
+}
+
+impl<U, ENF, CF, ERF> LiveChatClientBuilder<U, (), ENF, CF, ERF> 
+{
+    pub fn on_start<SF>(self, f: SF) -> LiveChatClientBuilder<U, Func<SF>, ENF, CF, ERF>
+        where
+        SF: Fn(),
+     {
+        Self {
+            live_url: self.live_url,
+            on_start: Func {f},
+            on_end: self.on_end,
+            on_chat: self.on_chat,
+            on_error: self.on_error,
         }
     }
 }
@@ -88,17 +102,7 @@ impl<SF, ENF, CF, ERF> LiveChatClientBuilder<(), SF, ENF, CF, ERF> {
     }
 }
 
-impl<SF, ENF, CF, ERF> LiveChatClientBuilder<String, SF, ENF, CF, ERF> {
-    pub fn build(self) -> LiveChatClient<SF, ENF, CF, ERF> {
-        LiveChatClient {
-            live_url: self.live_url,
-            on_start: self.on_start,
-            on_end: self.on_end,
-            on_chat: self.on_chat,
-            on_error: self.on_error,
-        }
-    }
-}
+youtube_chat_macro::gen_builder!();
 
 #[cfg(test)]
 mod live_chat_tests {
@@ -125,6 +129,7 @@ mod live_chat_tests {
         let client = LiveChatClientBuilder::new()
             .url("https://www.youtube.com/watch?v=Dx5qFachd3A".to_string())
             .unwrap()
+            .on_chat(|| println!("Hello"));
             .build();
         assert_eq!(
             &client.live_url,
