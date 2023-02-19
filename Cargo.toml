@@ -2,4 +2,5 @@
 
 members = [
     "youtube_chat",
+    "youtube_chat_macro"
 ]

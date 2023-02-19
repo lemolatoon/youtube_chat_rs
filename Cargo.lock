@@ -1179,3 +1179,7 @@ dependencies = [
  "serde_json",
  "url",
 ]
+
+[[package]]
+name = "youtube_chat_macro"
+version = "0.1.0"
