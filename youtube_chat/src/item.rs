@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{self, Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatItem {
     pub id: String,
     pub author: Author,
@@ -14,7 +14,7 @@ pub struct ChatItem {
     pub timestamp: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Author {
     pub name: Option<String>,
     pub thumbnail: Option<ImageItem>,
@@ -22,31 +22,31 @@ pub struct Author {
     pub badge: Option<Badge>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MessageItem {
     Text(String),
     Emoji(EmojiItem),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageItem {
     pub url: String,
     pub alt: Option<String>,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmojiItem {
     #[serde(flatten)]
     pub image_item: Option<ImageItem>,
     pub emoji_text: Option<String>,
     pub is_custome_emoji: Option<bool>,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Badge {
     pub thumbnail: ImageItem,
     pub label: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SuperChat {
     pub amount: String,
     pub color: String,
