@@ -1,5 +1,7 @@
 use url::Url;
 
+use crate::request::{fetch_live_page, RequestOptions};
+
 /// SF, ENF, CF, ERF is `()` or `T: Fn()`
 pub struct LiveChatClient<SF, ENF, CF, ERF> {
     live_url: String,
@@ -7,26 +9,40 @@ pub struct LiveChatClient<SF, ENF, CF, ERF> {
     on_end: ENF,
     on_chat: CF,
     on_error: ERF,
+    options: Option<RequestOptions>,
 }
 
-pub struct Func<T: Fn()> {
-    f: T,
+impl<SF, ENF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF> {
+    fn _start(&self) {}
+    pub fn execute(&self) {}
 }
 
-impl<T: Fn()> Func<T> {
-    fn new(f: T) -> Self {
-        Self { f }
-    }
-}
 impl<SF, ENF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF>
 where
-    SF: Fn(),
-    ENF: Fn(),
-    CF: Fn(),
-    ERF: Fn(),
+    SF: Fn(String),
 {
-    pub fn start(&self) {
-        unimplemented!()
+    pub async fn start(&mut self) {
+        let result: Result<String, anyhow::Error> = async {
+            let (options, live_id) = fetch_live_page(self.live_url).await?;
+            Ok(live_id)
+        }
+        .await;
+        match result {
+            Ok(live_id) => self.invoke_on_start(live_id),
+            Err(err) => self.invoke_on_error(err),
+        }
+    }
+}
+impl<ENF, CF, ERF> LiveChatClient<(), ENF, CF, ERF> {
+    pub fn invoke_start(&self, live_id: String) {}
+}
+
+impl<ENF, SF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF>
+where
+    SF: Fn(String),
+{
+    pub fn invoke_start(&self, live_id: String) {
+        (self.on_start)(live_id)
     }
 }
 
@@ -50,18 +66,62 @@ impl LiveChatClientBuilder<(), (), (), (), ()> {
     }
 }
 
-impl<U, ENF, CF, ERF> LiveChatClientBuilder<U, (), ENF, CF, ERF> 
-{
-    pub fn on_start<SF>(self, f: SF) -> LiveChatClientBuilder<U, Func<SF>, ENF, CF, ERF>
-        where
-        SF: Fn(),
-     {
-        Self {
+impl<U, ENF, CF, ERF> LiveChatClientBuilder<U, (), ENF, CF, ERF> {
+    pub fn on_start<SF>(self, f: SF) -> LiveChatClientBuilder<U, SF, ENF, CF, ERF>
+    where
+        SF: Fn(String),
+    {
+        LiveChatClientBuilder {
             live_url: self.live_url,
-            on_start: Func {f},
+            on_start: f,
             on_end: self.on_end,
             on_chat: self.on_chat,
             on_error: self.on_error,
+        }
+    }
+}
+
+impl<U, SF, CF, ERF> LiveChatClientBuilder<U, SF, (), CF, ERF> {
+    pub fn on_end<ENF>(self, f: ENF) -> LiveChatClientBuilder<U, SF, ENF, CF, ERF>
+    where
+        ENF: Fn(),
+    {
+        LiveChatClientBuilder {
+            live_url: self.live_url,
+            on_start: self.on_start,
+            on_end: f,
+            on_chat: self.on_chat,
+            on_error: self.on_error,
+        }
+    }
+}
+
+impl<U, SF, ENF, ERF> LiveChatClientBuilder<U, SF, ENF, (), ERF> {
+    pub fn on_chat<CF>(self, f: CF) -> LiveChatClientBuilder<U, SF, ENF, CF, ERF>
+    where
+        CF: Fn(),
+    {
+        LiveChatClientBuilder {
+            live_url: self.live_url,
+            on_start: self.on_start,
+            on_end: self.on_end,
+            on_chat: f,
+            on_error: self.on_error,
+        }
+    }
+}
+
+impl<U, SF, ENF, CF> LiveChatClientBuilder<U, SF, ENF, CF, ()> {
+    pub fn on_error<ERF>(self, f: ERF) -> LiveChatClientBuilder<U, SF, ENF, CF, ERF>
+    where
+        CF: Fn(),
+    {
+        LiveChatClientBuilder {
+            live_url: self.live_url,
+            on_start: self.on_start,
+            on_end: self.on_end,
+            on_chat: self.on_chat,
+            on_error: f,
         }
     }
 }
@@ -129,7 +189,7 @@ mod live_chat_tests {
         let client = LiveChatClientBuilder::new()
             .url("https://www.youtube.com/watch?v=Dx5qFachd3A".to_string())
             .unwrap()
-            .on_chat(|| println!("Hello"));
+            .on_chat(|| println!("Hello"))
             .build();
         assert_eq!(
             &client.live_url,
