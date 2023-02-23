@@ -4,7 +4,7 @@ use quote::{format_ident, quote};
 
 static TYPE_VARS: [&str; 4] = ["SF", "ENF", "CF", "ERF"];
 static FN_FIELD_NAMES: [&str; 4] = ["on_start", "on_end", "on_chat", "on_error"];
-static EMPTY_TYPE: &str = "()";
+static EMPTY_TYPE: &str = "Empty";
 
 #[proc_macro]
 pub fn gen_builder(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -137,65 +137,10 @@ fn type_var_to_where_constraint(type_var: &proc_macro2::TokenStream) -> proc_mac
         "SF" => quote!(#type_var: Fn(String)),
         "ENF" => quote!(#type_var: Fn()),
         "CF" => quote!(#type_var: Fn()),
-        "ERF" => quote!(#type_var: Fn()),
+        "ERF" => quote!(#type_var: Fn(anyhow::Error)),
         t => unreachable!("unexpected type var: {}", t),
     }
 }
-
-#[proc_macro]
-pub fn gen_invokes(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    gen_invokes_impl(tokens.into()).into()
-}
-
-fn gen_invokes_impl(_tokens: proc_macro2::TokenStream) -> proc_macro2::TokenStream {
-    let mut tokens = proc_macro2::TokenStream::new();
-    for (handling_idx, (type_var, fn_name)) in TYPE_VARS.into_iter().zip(FN_FIELD_NAMES).enumerate()
-    {
-        let type_declarations_for_without_fn: proc_macro2::TokenStream = TYPE_VARS
-            .into_iter()
-            .enumerate()
-            .filter_map(|(idx, val)| (idx != handling_idx).then(|| val))
-            .join(",")
-            .parse()
-            .unwrap();
-        let live_chat_client_types_for_without_fn: proc_macro2::TokenStream = TYPE_VARS
-            .into_iter()
-            .enumerate()
-            .map(
-                |(idx, val)| {
-                    if idx == handling_idx {
-                        EMPTY_TYPE
-                    } else {
-                        val
-                    }
-                },
-            )
-            .join(",")
-            .parse()
-            .unwrap();
-        let fn_name = format_ident!("invoke_{}", fn_name);
-        tokens.extend(quote!(
-            impl <#type_declarations_for_without_fn> LiveChatClient<#live_chat_client_types_for_without_fn> {
-               fn #fn_name(&self, ) 
-            }
-        ));
-    }
-    tokens
-}
-/*
-impl<ENF, CF, ERF> LiveChatClient<(), ENF, CF, ERF> {
-    pub fn invoke_start(&self, live_id: String) {}
-}
-
-impl<SF, ENF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF>
-where
-    SF: Fn(String),
-{
-    pub fn invoke_start(&self, live_id: String) {
-        (self.on_start)(live_id)
-    }
-}
-*/
 
 #[test]
 fn snapshot_impl() {
