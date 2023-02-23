@@ -1,15 +1,6 @@
-[package]
-name = "youtube_chat"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-anyhow = "1.0.69"
-chrono = "0.4.23"
-regex = "1.7.1"
-reqwest = { version = "0.11.14", features = ["json"] }
-serde = { version = "1.0.152", features = ["derive"]}
-serde_json = "1.0.93"
-url = "2.3.1"
+members = [
+    "youtube_chat",
+    "youtube_chat_macro"
+]
