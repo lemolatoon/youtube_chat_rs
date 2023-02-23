@@ -342,5 +342,17 @@ mod live_chat_tests {
             &client.live_url,
             "https://www.youtube.com/watch?v=Dx5qFachd3A"
         );
+
+        let client = LiveChatClientBuilder::new()
+            .url("https://www.youtube.com/watch?v=Dx5qFachd3A".to_string())
+            .unwrap()
+            .on_error(|_err| {})
+            .on_chat(|_chat_item| println!("Hello"))
+            .on_end(|| {})
+            .build();
+        assert_eq!(
+            &client.live_url,
+            "https://www.youtube.com/watch?v=Dx5qFachd3A"
+        );
     }
 }
