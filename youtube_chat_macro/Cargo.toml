@@ -2,6 +2,8 @@
 name = "youtube_chat_macro"
 description = "proc_macro s for `youtube_chat` crate"
 license = "MIT"
+authors = ["lemolatoon"]
+repository = "https://github.com/lemolatoon/youtube_chat_rs"
 version = "0.1.0"
 edition = "2021"
 
