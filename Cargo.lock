@@ -1336,5 +1336,4 @@ dependencies = [
  "insta",
  "proc-macro2",
  "quote",
- "syn",
 ]
