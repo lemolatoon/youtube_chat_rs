@@ -1,9 +1,12 @@
+use serde::Serialize;
+
 use crate::{
     item::ChatItem,
     parser::{get_options_from_live_page, parse_chat_data},
     youtube_types::{GetLiveChatBody, GetLiveChatResponse},
 };
 
+#[derive(Clone, Serialize, Debug)]
 pub struct RequestOptions {
     pub api_key: String,
     pub client_version: String,
@@ -24,7 +27,8 @@ pub async fn fetch_chat<'a>(
     );
     let client = reqwest::Client::new();
     let response = client.post(url).json(&body).send().await?;
-    let json: GetLiveChatResponse = response.json().await?;
+    let text = response.text().await.unwrap();
+    let json: GetLiveChatResponse = serde_json::from_str(&text).unwrap();
     Ok(parse_chat_data(json))
 }
 

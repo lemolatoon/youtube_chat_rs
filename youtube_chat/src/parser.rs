@@ -13,33 +13,45 @@ use regex::Regex;
 
 pub fn get_options_from_live_page(data: String) -> Result<(RequestOptions, String), anyhow::Error> {
     let live_id_regex =
-        Regex::new(r#"<link rel="canonical" href="https:\/\/www.youtube.com\/watch\?v=(.+?)">"#)
+        Regex::new(r#"<link rel="canonical" href="https://www.youtube.com/watch\?v=(.+?)">"#)
             .unwrap();
-    let live_id = match live_id_regex.find(&data) {
+    let live_id = match live_id_regex
+        .captures(&data)
+        .and_then(|captures| captures.get(1))
+    {
         Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("Live Stream was not found.")),
     };
 
     let replay_regex = Regex::new(r#"['"]isReplay['"]:\s*(true)"#).unwrap();
     match replay_regex.find(&data) {
-        Some(_) => {}
-        None => return Err(anyhow!("{live_id} is finished live.")),
+        Some(_) => return Err(anyhow!("{live_id} is finished live.")),
+        None => {}
     };
 
     let api_key_regex = Regex::new(r#"['"]INNERTUBE_API_KEY['"]:\s*['"](.+?)['"]"#).unwrap();
-    let api_key = match api_key_regex.find(&data) {
+    let api_key = match api_key_regex
+        .captures(&data)
+        .and_then(|captures| captures.get(1))
+    {
         Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("{live_id} is finished live.")),
     };
 
     let client_version_regex = Regex::new(r#"['"]clientVersion['"]:\s*['"]([\d.]+?)['"]"#).unwrap();
-    let client_version = match client_version_regex.find(&data) {
+    let client_version = match client_version_regex
+        .captures(&data)
+        .and_then(|captures| captures.get(1))
+    {
         Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("Client Version was not found.")),
     };
 
     let continuation_regex = Regex::new(r#"['"]continuation['"]:\s*['"](.+?)['"]"#).unwrap();
-    let continuation = match continuation_regex.find(&data) {
+    let continuation = match continuation_regex
+        .captures(&data)
+        .and_then(|captures| captures.get(1))
+    {
         Some(matched) => matched.as_str().to_string(),
         None => return Err(anyhow!("Client Version was not found.")),
     };
@@ -59,11 +71,14 @@ pub fn parse_chat_data(data: GetLiveChatResponse) -> (Vec<ChatItem>, String) {
         .continuation_contents
         .live_chat_continuaton
         .actions
-        .is_empty()
+        .as_ref()
+        .map(|actions| actions.is_empty())
+        .unwrap_or(true)
     {
         data.continuation_contents
             .live_chat_continuaton
             .actions
+            .unwrap()
             .into_iter()
             .filter_map(parse_action_to_chat_item)
             .collect()
@@ -383,7 +398,7 @@ fn parse_thumbnails_to_image_item(
     let thumbnail = thumbnails.into_iter().next()?;
     Some(ImageItem {
         url: thumbnail.url,
-        alt: alt?,
+        alt: alt,
     })
 }
 
@@ -409,13 +424,13 @@ fn parse_message(runs: Vec<MessageRun>) -> Vec<MessageItem> {
                 is_custome_emoji,
             } => {
                 let thumbnail = emoji.image.thumbnails.into_iter().next();
-                let shortcut = emoji.shortcuts.into_iter().next();
-                let image_item = thumbnail
-                    .zip(shortcut.clone())
-                    .map(|(thumbnail, shortcut)| ImageItem {
-                        url: thumbnail.url,
-                        alt: shortcut,
-                    });
+                let shortcut = emoji
+                    .shortcuts
+                    .and_then(|shortcuts| shortcuts.into_iter().next());
+                let image_item = thumbnail.map(|thumbnail| ImageItem {
+                    url: thumbnail.url,
+                    alt: shortcut.clone(),
+                });
 
                 let emoji_text = if is_custome_emoji == Some(true) {
                     shortcut

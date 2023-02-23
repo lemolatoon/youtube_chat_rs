@@ -31,7 +31,7 @@ pub enum MessageItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ImageItem {
     pub url: String,
-    pub alt: String,
+    pub alt: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EmojiItem {

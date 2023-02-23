@@ -1,6 +1,5 @@
-use itertools::Itertools;
 use proc_macro2;
-use quote::{format_ident, quote};
+use quote::quote;
 
 static TYPE_VARS: [&str; 4] = ["SF", "ENF", "CF", "ERF"];
 static FN_FIELD_NAMES: [&str; 4] = ["on_start", "on_end", "on_chat", "on_error"];
@@ -67,6 +66,7 @@ fn gen_builder_impl(_tokens: proc_macro2::TokenStream) -> proc_macro2::TokenStre
             .iter()
             .map(|(_, _, _, flag)| flag)
             .fold(true, |acc, is_not_empty| acc && !is_not_empty);
+        #[allow(non_snake_case)]
         let (SF, ENF, CF, ERF) = (
             types[0].0.clone(),
             types[1].0.clone(),
@@ -136,7 +136,7 @@ fn type_var_to_where_constraint(type_var: &proc_macro2::TokenStream) -> proc_mac
     match type_var.to_string().as_str() {
         "SF" => quote!(#type_var: Fn(String)),
         "ENF" => quote!(#type_var: Fn()),
-        "CF" => quote!(#type_var: Fn()),
+        "CF" => quote!(#type_var: Fn(ChatItem)),
         "ERF" => quote!(#type_var: Fn(anyhow::Error)),
         t => unreachable!("unexpected type var: {}", t),
     }

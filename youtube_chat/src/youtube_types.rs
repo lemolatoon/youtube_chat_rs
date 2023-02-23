@@ -45,13 +45,13 @@ pub struct GetLiveChatResponse {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetLiveChatResponseContinuationContents {
-    #[serde(rename = "liveChatContinuaton")]
+    #[serde(rename = "liveChatContinuation")]
     pub live_chat_continuaton: LiveChatContinuation,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LiveChatContinuation {
     pub continuations: Vec<Continuation>,
-    pub actions: Vec<Action>,
+    pub actions: Option<Vec<Action>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -89,7 +89,7 @@ pub struct TimedContinuationData {
     pub timeout_ms: usize,
     pub continuation: String,
     #[serde(rename = "clickTrackingParams")]
-    pub click_tracking_params: String,
+    pub click_tracking_params: Option<String>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Action {
@@ -109,7 +109,7 @@ pub enum MessageRun {
     MessageEmoji {
         emoji: Emoji,
         #[serde(rename = "variantIds")]
-        variant_ids: Vec<String>,
+        variant_ids: Option<Vec<String>>,
         #[serde(rename = "isCustomeEmoji")]
         is_custome_emoji: Option<bool>,
     },
@@ -119,11 +119,11 @@ pub enum MessageRun {
 pub struct Emoji {
     #[serde(rename = "emojiId")]
     pub emoji_id: String,
-    pub shortcuts: Vec<String>,
+    pub shortcuts: Option<Vec<String>>,
     #[serde(rename = "searchTerms")]
-    pub search_terms: Vec<String>,
+    pub search_terms: Option<Vec<String>>,
     #[serde(rename = "supportsSkinTone")]
-    pub supports_skin_tone: bool,
+    pub supports_skin_tone: Option<bool>,
     pub image: Image,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -196,7 +196,7 @@ pub struct MessageRendererBase {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ContextMenuEndpoint {
     #[serde(rename = "clickTrackingParams")]
-    pub click_tracking_params: String,
+    pub click_tracking_params: Option<String>,
     #[serde(rename = "commandMetadata")]
     pub command_metadata: CommandMetadata,
     #[serde(rename = "liveChatItemContextMenuEndpoint")]
@@ -302,7 +302,7 @@ pub struct HeaderSubText {
 pub struct AddChatItemAction {
     pub item: ActionItem,
     #[serde(rename = "clientId")]
-    pub client_id: String,
+    pub client_id: Option<String>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ActionItem {
@@ -315,5 +315,5 @@ pub struct ActionItem {
     #[serde(rename = "liveChatPaidStickerRenderer")]
     pub live_chat_paid_sticker_renderer: Option<LiveChatPaidStickerRenderer>,
     #[serde(rename = "liveChatViewerEngagementMessageRenderer")]
-    pub live_chat_viewer_engagement_message_renderer: serde_json::Value,
+    pub live_chat_viewer_engagement_message_renderer: Option<serde_json::Value>,
 }

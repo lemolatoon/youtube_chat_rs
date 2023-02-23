@@ -1,6 +1,10 @@
+use anyhow::anyhow;
 use url::Url;
 
-use crate::request::{fetch_live_page, RequestOptions};
+use crate::{
+    item::ChatItem,
+    request::{fetch_chat, fetch_live_page, RequestOptions},
+};
 
 /// SF, ENF, CF, ERF is `()` or `T: Fn()`
 pub struct LiveChatClient<SF, ENF, CF, ERF>
@@ -25,11 +29,43 @@ where
     CF: InvokeOnChat,
     ERF: InvokeOnError,
 {
-    fn _start(&self) {}
-    pub fn execute(&self) {}
+    pub async fn execute(&mut self) {
+        if let Some(mut options) = self.options.clone() {
+            let result: Result<(), anyhow::Error> = async {
+                let (chat_items, continuation) = fetch_chat(options.clone()).await?;
+                for chat_item in chat_items {
+                    self.invoke_on_chat(chat_item);
+                }
+                options.continuation = continuation;
+                self.options = Some(options);
+                Ok(())
+            }
+            .await;
+            if let Err(err) = result {
+                self.invoke_on_error(err);
+            }
+        } else {
+            self.invoke_on_error(anyhow!(
+                "This client is not ready for execute, just call `start`"
+            ));
+        }
+    }
+
+    pub async fn start(&mut self) -> Result<(), anyhow::Error> {
+        let (options, live_id) = fetch_live_page(self.live_url.clone()).await?;
+        self.options = Some(options);
+        self.invoke_on_start(live_id);
+        Ok(())
+    }
+
+    pub async fn stop(&mut self) -> Result<(), anyhow::Error> {
+        self.options = None;
+        self.invoke_on_end();
+        Ok(())
+    }
 }
 
-struct Empty;
+pub struct Empty;
 pub trait InvokeOnStart {
     fn invoke_on_start(&self, _live_id: String) {}
 }
@@ -37,7 +73,7 @@ pub trait InvokeOnEnd {
     fn invoke_on_end(&self) {}
 }
 pub trait InvokeOnChat {
-    fn invoke_on_chat(&self) {}
+    fn invoke_on_chat(&self, _chat_item: ChatItem) {}
 }
 pub trait InvokeOnError {
     fn invoke_on_error(&self, _error: anyhow::Error) {}
@@ -64,10 +100,10 @@ where
 }
 impl<T> InvokeOnChat for T
 where
-    T: Fn(),
+    T: Fn(ChatItem),
 {
-    fn invoke_on_chat(&self) {
-        (self)()
+    fn invoke_on_chat(&self, chat_item: ChatItem) {
+        (self)(chat_item)
     }
 }
 impl<T> InvokeOnError for T
@@ -107,8 +143,8 @@ where
     CF: InvokeOnChat,
     ERF: InvokeOnError,
 {
-    fn invoke_on_chat(&self) {
-        self.on_chat.invoke_on_chat()
+    fn invoke_on_chat(&self, chat_item: ChatItem) {
+        self.on_chat.invoke_on_chat(chat_item)
     }
 }
 impl<SF, ENF, CF, ERF> InvokeOnError for LiveChatClient<SF, ENF, CF, ERF>
@@ -120,26 +156,6 @@ where
 {
     fn invoke_on_error(&self, error: anyhow::Error) {
         self.on_error.invoke_on_error(error)
-    }
-}
-
-impl<SF, ENF, CF, ERF> LiveChatClient<SF, ENF, CF, ERF>
-where
-    SF: InvokeOnStart,
-    ENF: InvokeOnEnd,
-    CF: InvokeOnChat,
-    ERF: InvokeOnError,
-{
-    pub async fn start(&mut self) {
-        let result: Result<String, anyhow::Error> = async {
-            let (options, live_id) = fetch_live_page(self.live_url.clone()).await?;
-            Ok(live_id)
-        }
-        .await;
-        match result {
-            Ok(live_id) => self.invoke_on_start(live_id),
-            Err(err) => self.invoke_on_error(err),
-        }
     }
 }
 
@@ -217,7 +233,7 @@ where
 {
     pub fn on_chat<CF>(self, f: CF) -> LiveChatClientBuilder<U, SF, ENF, CF, ERF>
     where
-        CF: Fn(),
+        CF: Fn(ChatItem),
     {
         LiveChatClientBuilder {
             live_url: self.live_url,
@@ -318,7 +334,7 @@ mod live_chat_tests {
         let client = LiveChatClientBuilder::new()
             .url("https://www.youtube.com/watch?v=Dx5qFachd3A".to_string())
             .unwrap()
-            .on_chat(|| println!("Hello"))
+            .on_chat(|_chat_item| println!("Hello"))
             .on_start(|live_id| println!("{}", live_id))
             .on_end(|| {})
             .build();
