@@ -4,8 +4,9 @@ description = "provides Rust interface of fetching youtube live chat comments"
 license = "MIT"
 authors = ["lemolatoon"]
 repository = "https://github.com/lemolatoon/youtube_chat_rs"
-version = "0.1.2"
+version = "0.1.3"
 readme = "README.md"
+documentation = "https://docs.rs/youtube_chat"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
