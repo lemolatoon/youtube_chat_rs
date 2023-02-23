@@ -1309,7 +1309,7 @@ dependencies = [
 
 [[package]]
 name = "youtube_chat"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1318,7 +1318,7 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
- "youtube_chat_macro",
+ "youtube_chat_macro 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1334,6 +1334,16 @@ name = "youtube_chat_macro"
 version = "0.1.0"
 dependencies = [
  "insta",
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
+name = "youtube_chat_macro"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95e8023ad911593de052298f0405f841366c972d3eed415c460c62d8e22b226e"
+dependencies = [
  "proc-macro2",
  "quote",
 ]
