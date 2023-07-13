@@ -156,9 +156,9 @@ impl Renderer {
                 .message
                 .runs
                 .clone(),
-            Renderer::LiveChatMembershipItemRenderer(renderer) => {
-                renderer.header_sub_text.runs.clone()
-            }
+            Renderer::LiveChatMembershipItemRenderer(renderer) => renderer.header_sub_text.as_ref()
+                .map(|header_sub_text| header_sub_text.runs.clone())
+                .unwrap_or(Vec::new()),
             Renderer::LiveChatPaidStickerRenderer(_) => Vec::new(),
         }
     }
