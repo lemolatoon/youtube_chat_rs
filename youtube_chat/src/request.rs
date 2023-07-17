@@ -28,7 +28,7 @@ pub async fn fetch_chat<'a>(
     let client = reqwest::Client::new();
     let response = client.post(url).json(&body).send().await?;
     let text = response.text().await.unwrap();
-    let json: GetLiveChatResponse = serde_json::from_str(&text).unwrap();
+    let json: GetLiveChatResponse = serde_json::from_str(&text)?;
     Ok(parse_chat_data(json))
 }
 
