@@ -273,8 +273,7 @@ impl Renderer {
                 renderer.message_renderer_base.timestamp_usec.clone()
             }
         };
-        Utc.timestamp_millis_opt(timestamp_usec.parse::<i64>().ok()?)
-            .earliest()
+        Some(Utc.timestamp_nanos(timestamp_usec.parse::<i64>().ok()? * 1000))
     }
 
     fn author_badge(&self) -> Option<Vec<AuthorBadge>> {
