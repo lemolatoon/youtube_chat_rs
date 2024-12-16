@@ -1,4 +1,3 @@
-use proc_macro2;
 use quote::quote;
 
 static TYPE_VARS: [&str; 4] = ["SF", "ENF", "CF", "ERF"];
@@ -65,7 +64,7 @@ fn gen_builder_impl(_tokens: proc_macro2::TokenStream) -> proc_macro2::TokenStre
         let is_all_empty_type = types
             .iter()
             .map(|(_, _, _, flag)| flag)
-            .fold(true, |acc, is_not_empty| acc && !is_not_empty);
+            .all(|is_not_empty| !is_not_empty);
         #[allow(non_snake_case)]
         let (SF, ENF, CF, ERF) = (
             types[0].0.clone(),

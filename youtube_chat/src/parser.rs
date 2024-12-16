@@ -24,9 +24,8 @@ pub fn get_options_from_live_page(data: String) -> Result<(RequestOptions, Strin
     };
 
     let replay_regex = Regex::new(r#"['"]isReplay['"]:\s*(true)"#).unwrap();
-    match replay_regex.find(&data) {
-        Some(_) => return Err(anyhow!("{live_id} is finished live.")),
-        None => {}
+    if replay_regex.find(&data).is_some() {
+        return Err(anyhow!("{live_id} is finished live."));
     };
 
     let api_key_regex = Regex::new(r#"['"]INNERTUBE_API_KEY['"]:\s*['"](.+?)['"]"#).unwrap();
@@ -156,7 +155,9 @@ impl Renderer {
                 .message
                 .runs
                 .clone(),
-            Renderer::LiveChatMembershipItemRenderer(renderer) => renderer.header_sub_text.as_ref()
+            Renderer::LiveChatMembershipItemRenderer(renderer) => renderer
+                .header_sub_text
+                .as_ref()
                 .map(|header_sub_text| header_sub_text.runs.clone())
                 .unwrap_or(Vec::new()),
             Renderer::LiveChatPaidStickerRenderer(_) => Vec::new(),
@@ -315,14 +316,8 @@ impl Renderer {
                         chat_item.author.badge = Some(badge); // mutate
                     }
                     chat_item.is_membership = true; // mutate
-                } else {
-                    if icon_type == Some("OWNER".to_string()) {
-                        chat_item.is_owner = true;
-                    } else if icon_type == Some("VERIFIED".to_string()) {
-                        chat_item.is_owner = true;
-                    } else if icon_type == Some("MODERATOR".to_string()) {
-                        chat_item.is_owner = true;
-                    }
+                } else if let Some("OWNER" | "VERIFIED" | "MODERATOR") = icon_type.as_deref() {
+                    chat_item.is_owner = true;
                 }
             }
         }
@@ -377,6 +372,7 @@ impl From<LiveChatPaidStickerRenderer> for Renderer {
 }
 fn renderer_from_action(action: Action) -> Option<Renderer> {
     let item = action.add_chat_item_action?.item;
+    #[allow(clippy::manual_map)]
     if let Some(renderer) = item.live_chat_text_message_renderer {
         Some(renderer.into())
     } else if let Some(renderer) = item.live_chat_paid_message_renderer {
@@ -397,20 +393,22 @@ fn parse_thumbnails_to_image_item(
     let thumbnail = thumbnails.into_iter().next()?;
     Some(ImageItem {
         url: thumbnail.url,
-        alt: alt,
+        alt,
     })
 }
 
 fn convert_color_to_hex6(color_number: isize) -> String {
-    format!(
-        "#{}",
-        color_number
-            .to_ne_bytes()
-            .into_iter()
-            .take(4)
-            .map(|x| format!("{:02X}", x))
-            .collect::<String>()
-    )
+    use std::fmt::Write;
+    let mut hex_string = String::from("#");
+    color_number
+        .to_ne_bytes()
+        .into_iter()
+        .take(4)
+        .fold(&mut hex_string, |acc, x| {
+            write!(acc, "{:02X}", x).unwrap();
+            acc
+        });
+    hex_string
 }
 
 fn parse_message(runs: Vec<MessageRun>) -> Vec<MessageItem> {

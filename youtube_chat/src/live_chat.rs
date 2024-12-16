@@ -185,6 +185,12 @@ impl LiveChatClientBuilder<(), Empty, Empty, Empty, Empty> {
     }
 }
 
+impl Default for LiveChatClientBuilder<(), Empty, Empty, Empty, Empty> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<U, ENF, CF, ERF> LiveChatClientBuilder<U, Empty, ENF, CF, ERF>
 where
     ENF: InvokeOnEnd,
@@ -332,7 +338,7 @@ mod live_chat_tests {
         );
 
         let client = LiveChatClientBuilder::new()
-            .url("https://www.youtube.com/watch?v=Dx5qFachd3A".to_string())
+            .url("https://www.youtube.com/watch?v=Dx5qFachd3A")
             .unwrap()
             .on_chat(|_chat_item| println!("Hello"))
             .on_start(|live_id| println!("{}", live_id))
@@ -344,7 +350,7 @@ mod live_chat_tests {
         );
 
         let client = LiveChatClientBuilder::new()
-            .url("https://www.youtube.com/watch?v=Dx5qFachd3A".to_string())
+            .url("https://www.youtube.com/watch?v=Dx5qFachd3A")
             .unwrap()
             .on_error(|_err| {})
             .on_chat(|_chat_item| println!("Hello"))

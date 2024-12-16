@@ -6,7 +6,7 @@ use youtube_chat::live_chat::LiveChatClientBuilder;
 #[tokio::main]
 async fn main() {
     let mut client = LiveChatClientBuilder::new()
-        .url("https://www.youtube.com/watch?v=jfKfPfyJRdk".to_string())
+        .url("https://www.youtube.com/watch?v=jfKfPfyJRdk")
         .unwrap()
         .on_chat(|chat_item| println!("{:?}", chat_item.message))
         .on_error(|error| eprintln!("{:?}", error))
